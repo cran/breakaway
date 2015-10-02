@@ -41,17 +41,16 @@ Logical: force the procedure to run in the presence of frequency count concatena
 		}
 }
 \references{
-	Willis, A.D. and Bunge, J. (2014). A ratio-based method for estimating an unknown number of classes. Manuscript submitted for publication.
-  
-	Rocchetti, I., Bunge, J. and Bohning, D. (2011). Population size estimation based upon ratios of recapture probabilities. \emph{Annals of Applied Statistics}, \bold{5}.
+	  Willis, A. (2015). Species richness estimation with high diversity but spurious singletons. \emph{Under review.}
+
+	Willis, A. and Bunge, J. (2015). Estimating diversity via frequency ratios. \emph{Biometrics.}
 }
 \author{Amy Willis}
 \note{ It is common for microbial ecologists to believe that their dataset contains false diversity. This often arises because sequencing errors result in classifying already observed organisms as new organisms. \samp{breakaway_nof1} was developed as an exploratory tool in this case. Practitioners can run \samp{breakaway} on their dataset including the singletons, and \samp{breakaway_nof1} on their dataset excluding the singletons, and assess if the estimated levels of diversity are very different. Great disparity may provide evidence of an inflated singleton count, or at the very least, that \samp{breakaway} is especially sensitive to the number of rare species observed. Note that \samp{breakaway_nof1} may be less stable than \samp{breakaway} due to predicting based on a reduced dataset, and have greater standard errors.
 	}
 \seealso{ \code{\link{breakaway}}; \code{\link{apples}} }
-\examples{
-	breakaway_nof1(apples[-1,])
-	breakaway_nof1(apples[-1,],plot=FALSE,print=FALSE,answers=TRUE) 
+\examples{breakaway_nof1(apples[-1,])
+breakaway_nof1(apples[-1,],plot=FALSE,print=FALSE,answers=TRUE) 
 }
 \keyword{ diversity }
 \keyword{ microbial }

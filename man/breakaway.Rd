@@ -1,7 +1,7 @@
 \name{breakaway}
 \alias{breakaway}
 \title{ function for species richness estimation }
-\description{This function implements the species richness estimation procedure outlined in Willis & Bunge (2014). The diversity estimate, standard error, estimated model coefficients, model details and plot of the fitted model are returned.}
+\description{This function implements the species richness estimation procedure outlined in Willis & Bunge (2015). The diversity estimate, standard error, estimated model coefficients, model details and plot of the fitted model are returned.}
 \usage{breakaway(data, print = TRUE, plot = TRUE, answers = FALSE, force = FALSE)}
 \arguments{
   \item{data}{
@@ -25,7 +25,7 @@ Logical: force \samp{breakaway} to run in the presence of frequency count concat
 		A category representing algorithm behaviour. \samp{code=1} indicates no nonlinear models converged and the transformed WLRM diversity estimate of Rocchetti et. al. (2011) is returned. \samp{code=2} indicates that the iteratively reweighted model converged and was returned. \samp{code=3} indicates that iterative reweighting did not converge but a model based on a simplified variance structure was returned (in this case, the variance of the frequency ratios is assumed to be proportional to the denominator frequency index). Please peruse your fitted model before using your diversity estimate. 
 		}
 	\item{name}{
-		The ``name'' of the selected model. The first integer represents the numerator polynomial degree and the second integer represents the denominator polynomial degree of the model for the frequency ratios. See Willis & Bunge (2014) for details.
+		The ``name'' of the selected model. The first integer represents the numerator polynomial degree and the second integer represents the denominator polynomial degree of the model for the frequency ratios. See Willis & Bunge (2015) for details.
 		}
 	\item{para}{
 		Estimated model parameters and standard errors.
@@ -44,7 +44,7 @@ Logical: force \samp{breakaway} to run in the presence of frequency count concat
 		}
 }
 \references{
-	Willis, A.D. and Bunge, J. (2014). A ratio-based method for estimating an unknown number of classes. Manuscript submitted for publication. 
+	Willis, A. and Bunge, J. (2015). Estimating diversity via frequency ratios. \emph{Biometrics.}
   
 	Rocchetti, I., Bunge, J. and Bohning, D. (2011). Population size estimation based upon ratios of recapture probabilities. \emph{Annals of Applied Statistics}, \bold{5}.
 }
@@ -52,9 +52,8 @@ Logical: force \samp{breakaway} to run in the presence of frequency count concat
 \note{ \samp{breakaway} presents an estimator of species richness that is well-suited to the high-diversity/microbial setting. However, many microbial datasets display more diversity than the Kemp-type models can permit. In this case, the log-transformed WLRM diversity estimator of Rocchetti et. al. (2011) is returned. The authors' experience suggests that some datasets that require the log-transformed WLRM contain ``false'' diversity, that is, diversity attributable to sequencing errors (via an inflated singleton count). The authors encourage judicious use of diversity estimators when the dataset may contain these errors, and recommend the use of \code{\link{breakaway_nof1}} as an exploratory tool in this case. 
 	}
 \seealso{ \code{\link{breakaway_nof1}}; \code{\link{apples}} }
-\examples{
-	breakaway(apples)
-	breakaway(apples,plot=FALSE,print=FALSE,answers=TRUE) 
+\examples{breakaway(apples)
+breakaway(apples,plot=FALSE,print=FALSE,answers=TRUE) 
 }
 \keyword{ diversity }
 \keyword{ microbial }

@@ -19,7 +19,7 @@ breakaway_nof1 <- function(data, print=TRUE, plot=TRUE, answers=FALSE, force=FAL
   
   if(length(data)>1) {
     if (data[1,1]!=2 || data[1,2]==0) {
-      if(print) cat("breakaway_nof1 is for when you have no singleton count.\n You need a leading doubleton count!\n")
+      if(print) cat("breakaway_nof1 is for when you have no singleton count.\nYou need a leading doubleton count!\n")
     } else {
       data <- data[!(data[,2]==0 | is.na(data[,2])),]
       orig_data <- data
@@ -33,7 +33,7 @@ breakaway_nof1 <- function(data, print=TRUE, plot=TRUE, answers=FALSE, force=FAL
       xbar <- mean(c(1,xs))
       lhs <- list("x"=xs-xbar,"y"=data[2:cutoff,2]/data[1:(cutoff-1),2])
       
-      if ( cutoff < 6) { ### check for unusual data structures
+      if ( cutoff < 5) { ### check for unusual data structures
         if(print) cat("You don't have enough contiguous frequencies.\n breakaway needs at least 6!\n")
       } else if ((force==FALSE) && ( (data[cutoff,2]/data[cutoff-1,2])>10 )) {
         cat("\tIt looks like you've concatenated some of your data!\n Please truncate and try again.\n")
@@ -142,40 +142,60 @@ breakaway_nof1 <- function(data, print=TRUE, plot=TRUE, answers=FALSE, force=FAL
             result$code <- 3
           }
           
-          if(choice$model=="model_1_0") {
-            b0_hat <- coef(choice$full)[1]
-            b0_var <- vcov(choice$full)[1,1]
+          effective_coef <- c(coef(choice$full),rep(0,9-length(coef(choice$full))))
+          if (choice$model=="model_1_0") {
+            effective_coef[3] <- 1
+          }
+          
+          b <- effective_coef[1]-effective_coef[2]*xbar+effective_coef[4]*xbar^2-effective_coef[6]*xbar^3+effective_coef[8]*xbar^4
+          a <- 1-effective_coef[3]*xbar+effective_coef[5]*xbar^2-effective_coef[7]*xbar^3+effective_coef[9]*xbar^4
+          nabla_b <- c(1/a, -xbar/a, b*xbar/a^2, xbar^2/a, -b*xbar^2/a^2, -xbar^3/a, b*xbar^3/a^2, xbar^4/a, -b*xbar^4/a^2)
+          nabla_b <- nabla_b[1: length(coef(choice$full))]
+          
+          b1 <- effective_coef[1]+effective_coef[2]*(1-xbar)+effective_coef[4]*(1-xbar)^2+effective_coef[6]*(1-xbar)^3+effective_coef[8]*(1-xbar)^4
+          a1 <- 1+effective_coef[3]*(1-xbar)+effective_coef[5]*(1-xbar)^2+effective_coef[7]*(1-xbar)^3+effective_coef[9]*(1-xbar)^4
+          nabla_c <- c(1/a1, (1-xbar)/a1, -b1*(1-xbar)/a1^2, (1-xbar)^2/a1, -b1*(1-xbar)^2/a1^2, (1-xbar)^3/a1,-b1*(1-xbar)^3/a1^2,(1-xbar)^4/a1,-b1*(1-xbar)^4/a1^2)
+          nabla_c <- nabla_c[1: length(coef(choice$full))]
+          
+          b0_hat <- b/a 
+          c0_hat <- b1/a1 
+          
+          if (choice$model=="model_1_0") {
+            nabla_b <- c(nabla_b,0)
+            new_cov_b <- matrix(0,nrow=3,ncol=3)
+            new_cov_b[1:2,1:2] <- vcov(choice$full)
+            b0_var <- t(nabla_b)%*%new_cov_b%*%nabla_b
             
-            c0_hat <- (coef(choice$full)[1]+coef(choice$full)[2])/2
-            c0_var <- 0.25*(vcov(choice$full)[1,1]+vcov(choice$full)[2,2]+2*vcov(choice$full)[1,2])
-            
+            nabla_c <- c(nabla_c,0)
+            new_cov_c <- matrix(0,nrow=3,ncol=3)
+            new_cov_c[1:2,1:2] <- vcov(choice$full)
+            c0_var <- t(nabla_c)%*%new_cov_c%*%nabla_c
           } else {
-            effective_coef <- c(coef(choice$full),rep(0,9-length(coef(choice$full))))
-            
-            b <- effective_coef[1]-effective_coef[2]*xbar+effective_coef[4]*xbar^2-effective_coef[6]*xbar^3+effective_coef[8]*xbar^4
-            a <- 1-effective_coef[3]*xbar+effective_coef[5]*xbar^2-effective_coef[7]*xbar^3+effective_coef[9]*xbar^4
-            nabla_b <- c(1/a, -xbar/a, b*xbar/a^2, xbar^2/a, -b*xbar^2/a^2, -xbar^3/a, b*xbar^3/a^2, xbar^4/a, -b*xbar^4/a^2)
-            nabla_b <- nabla_b[1:length(coef(choice$full))]
-            b0_hat <- b/a # should match predict(choice$full,list(x=-xbar))
             b0_var <- t(nabla_b)%*%vcov(choice$full)%*%nabla_b
-            
-            b1 <- effective_coef[1]+effective_coef[2]*(1-xbar)+effective_coef[4]*(1-xbar)^2+effective_coef[6]*(1-xbar)^3+effective_coef[8]*(1-xbar)^4
-            a1 <- 1+effective_coef[3]*(1-xbar)+effective_coef[5]*(1-xbar)^2+effective_coef[7]*(1-xbar)^3+effective_coef[9]*(1-xbar)^4
-            nabla_c <- c(1/a1, (1-xbar)/a1, -b1*(1-xbar)/a1^2, (1-xbar)^2/a1, -b1*(1-xbar)^2/a1^2, (1-xbar)^3/a1,-b1*(1-xbar)^3/a1^2,(1-xbar)^4/a1,-b1*(1-xbar)^4/a1^2)
-            nabla_c <- nabla_c[1:length(coef(choice$full))]
-            c0_hat <- b1/a1 #predict(choice$full,list(x=-xbar+1))
             c0_var <- t(nabla_c)%*%vcov(choice$full)%*%nabla_c
           }
+          
           f1_pred <- f2/c0_hat
           f0_pred <- f1_pred/b0_hat
-          
-          covmatrix <- diag(c(f2*(1-f2/n),b0_var,c0_var))
-          derivs <- c((1+b0_hat)*b0_hat^-1*c0_hat^-1,-f2*b0_hat^-2*c0_hat^-1,-f2*(1+b0_hat)*b0_hat^-1*c0_hat^-2)
-          f0plusf1_var <- t(derivs)%*%covmatrix%*%(derivs)
-          
           diversity <- f0_pred + f1_pred + n
-          diversity_se <- sqrt(f0plusf1_var+n*(f0_pred+f1_pred)/(n+f0_pred+f1_pred))
           
+          covmatrix <- diag(c(f2*(1-f2/diversity),b0_var,c0_var))
+          if (choice$model == "model_1_0") {
+            cov_b0_c0 <- 0.5*sum(vcov(choice$full)[,1])
+            covmatrix[2,3] <- cov_b0_c0
+            covmatrix[3,2] <- cov_b0_c0
+          } else {
+            covmatrix[2,3] <- b0_var/a1
+            covmatrix[3,2] <- b0_var/a1 
+          }
+          derivs <- matrix(c(b0_hat^-1*c0_hat^-1,
+                             -f2*b0_hat^-2*c0_hat^-1,
+                             -f2*b0_hat^-1*c0_hat^-2,c0_hat^-1,0,-f2*b0_hat^-2),byrow=TRUE,ncol=3,nrow=2)
+          f0plusf1_var <- derivs%*%covmatrix%*%t(derivs)
+          
+          var_est <- sum(f0plusf1_var) + n*(f0_pred+f1_pred)/diversity - 2*f0_pred*n/diversity - 2*f1_pred*n/diversity
+          diversity_se <- ifelse(var_est<0, 0, sqrt(var_est)) ## Piece 6
+
           if (choice$model == "model_1_0") the_function <- "f_{x+1}/f_{x} ~ (beta0+beta1*x)/(1+x)"
           if (choice$model == "model_1_1") the_function <- "f_{x+1}/f_{x} ~ (beta0+beta1*(x-xbar))/(1+alpha1*(x-xbar))"
           if (choice$model == "model_2_1") the_function <- "f_{x+1}/f_{x} ~ (beta0+beta1*(x-xbar)+beta2*(x-xbar)^2)/(1+alpha1*(x-xbar))"
@@ -214,6 +234,8 @@ breakaway_nof1 <- function(data, print=TRUE, plot=TRUE, answers=FALSE, force=FAL
             result$est <- diversity
             result$seest <- as.vector(diversity_se)
             result$full <- choice$full
+            d <- exp(1.96*sqrt(log(1+result$seest^2/f0_pred)))
+            result$ci <- c(n+f0_pred/d,n+f0_pred*d)
             return(result)
           }
         }      
