@@ -128,11 +128,17 @@ bt_day_1_2_fixed_id_random <- betta_random(formula = estimate ~ Day | ID,
 bt_day_1_2_fixed_id_random$table
 
 ## -----------------------------------------------------------------------------
+do_computation_now <- FALSE
+
+if(do_computation_now){ #if you want to run this bootstrap yourself, you can!
 set.seed(345)
 submodel_test <- test_submodel(bt_day_1_2_fixed_id_random,
                           submodel_formula = estimate~1,
                           method = "bootstrap",
-                          nboot = 100)
+                          nboot = 1000)
+} else{ #to save time, we'll load saved test_submodel() output instead
+  data("submodel_test")
+}
 
 submodel_test$pval
 

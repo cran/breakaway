@@ -3,10 +3,10 @@ title: "Introduction to diversity estimation"
 author: "Amy Willis"
 date: "`r Sys.Date()`"
 output: 
-  output: rmarkdown::github_document
+  output: rmarkdown::html_document
 vignette: >
   %\VignetteIndexEntry{intro-diversity-estimation}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -31,7 +31,7 @@ library(breakaway)
 Note that we are not continuing to maintain the CRAN version of `breakaway` at this time, so avoid `install.packages("breakaway")`.
 
 If you are not accustomed to using the pipe in `R` (the operator `%>%`), I strongly encourage you to start using it. It will make your code easier to read and write. Here is how to install and load it:
-
+  
 ```{r}
 library(magrittr)
 ```
@@ -61,7 +61,7 @@ pasolli_et_al <- openxlsx::read.xlsx("https://ars.els-cdn.com/content/image/1-s2
 ```
 
 The "frequency count table" is the basic data structure for estimating species richness. It is a table with two columns: the second column indicates the number of species observed `j` times, where the first column contains `j`. Let's take a look at the first 10 columns of the frequency count table for the Pasolli et al dataset:
-
+  
 ```{r}
 ft <- pasolli_et_al$`#.Samples` %>% make_frequency_count_table
 ft %>% head(10)
@@ -88,7 +88,7 @@ If you're not accustomed to using `%>%`, here is a quick demo: `argument %>% fun
 ## Species richness estimation with `breakaway`
 
 The simplest way to estimate species richness with `breakaway` is as follows:
-
+  
 ```{r}
 estimated_richness <- breakaway(ft)
 estimated_richness
@@ -132,12 +132,12 @@ Wow! That changed our original estimate of `r round(estimated_richness$estimate)
 Essentially the structure of this data indicates that there are a huge number of unobserved species. If you follow the curve of the frequency ratios (the plot above), it looks like the y-intercept is going to be close to $y=0$. `breakaway`'s estimate predicts that the number of unobserved species is 
 
 $$ 
-\text{number of species observed once} \div \text{the fitted intercept on the frequency ratio plot}.
+  \text{number of species observed once} \div \text{the fitted intercept on the frequency ratio plot}.
 $$ 
-
-Therefore, as that intercept gets close to zero, the estimate of the number of unobserved species gets really large! Intuitively, this makes sense -- if there are so many rare species, we cannot reliably predict how many unobserved species there are. There is some minimal amount of information needed to estimate total species richness! 
-
-*Note: Last time we checked (September 2021), `breakaway`, with the default settings, produced an estimate of 7724. If this number has changed significantly since then, it's because we are constantly making improvements to the code base, which may change estimates -- usually by a little but sometimes by more. Please let me know or [log an issue](https://github.com/adw96/breakaway/issues) to let us know if this occurred!*
+  
+  Therefore, as that intercept gets close to zero, the estimate of the number of unobserved species gets really large! Intuitively, this makes sense -- if there are so many rare species, we cannot reliably predict how many unobserved species there are. There is some minimal amount of information needed to estimate total species richness! 
+  
+  *Note: Last time we checked (September 2021), `breakaway`, with the default settings, produced an estimate of 7724. If this number has changed significantly since then, it's because we are constantly making improvements to the code base, which may change estimates -- usually by a little but sometimes by more. Please let me know or [log an issue](https://github.com/adw96/breakaway/issues) to let us know if this occurred!*
 
 ## Conclusions
 
@@ -146,7 +146,7 @@ I'm going to wrap up this tutorial by saying that most datasets do not have this
 ## Postscript on model selection
 
 As mentioned previously, `breakaway` executes a model selection routine. We see that with the new cut-off, we have a different model:
-
+  
 ```{r}
 estimated_richness_10 %$% model
 ```
@@ -167,3 +167,5 @@ estimated_richness_kemp_10 %$% plot
 ```
 
 Now this looks pretty good!
+
+
