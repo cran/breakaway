@@ -20,8 +20,7 @@
 #' the \code{data} argument.
 #' @param data A dataframe containing the response, response standard errors, covariates,
 #' and grouping variable. Required with the \code{formula} argument.
-#' @param n_initializations A positive integer giving number of random
-#' initializations to be used in optimization (default 10)
+#' @param p.digits (Optional) A number that specifies the number of digits to which p-values will be rounded. The default value is 3 digits.
 #' @return \item{table}{ A coefficient table for the model parameters. The
 #' columns give the parameter estimates, standard errors, and p-values,
 #' respectively. This model is only as effective as your diversity estimation
@@ -43,6 +42,7 @@
 #' @importFrom stats coef dexp dgeom dnbinom dpois fitted lm model.matrix nls optim
 #' @importFrom stats pchisq pnorm predict quantile rbeta rbinom rnbinom rnorm runif sd var vcov
 #' @import lme4
+#' @importFrom lme4 subbars
 #'
 #' @seealso \code{\link{betta}};
 #' @references Willis, A., Bunge, J., and Whitman, T. (2015). Inference for
@@ -71,14 +71,7 @@
 #'     "b", "b"))
 #'
 #' @export
-betta_random <- function(chats = NULL, ses, X = NULL, groups = NULL, formula = NULL, data = NULL,
-                         n_initializations = 10) {
-#   if(Sys.info()$sysname == "Darwin" & R.version$arch == "aarch64"){
-#     warning("In testing we have found betta_random() to return different values on Mac M1 systems than on any other system.
-# This problem appears to be related to behavior of optim() and/or linear algebra packages on M1 systems.
-# We therefore highly encourage re-running your analysis on a non-M1 system.")
-#   }
-
+betta_random <- function(chats = NULL, ses, X = NULL, groups = NULL, formula = NULL, data = NULL, p.digits = 3) {
   if (!is.null(formula)) {
     if (is.null(data)) {
       stop("Please include a dataframe that corresponds with your formula.")
@@ -93,18 +86,20 @@ betta_random <- function(chats = NULL, ses, X = NULL, groups = NULL, formula = N
     }
   }
   if (!is.null(formula)) {
-    ses <- data[,deparse(substitute(ses))]
-    ### next line of code is (the relevant part of) the
-    ### (unexported) "RHSFormula" function in lme4
-    ### (included here to avoid R CMD CHECK notes related to ::: operator)
-    rhsformula <- formula[[length(formula)]]
-    bars <- lme4::findbars(rhsformula)
-    ### next line of code is the (unexported) "barnames" function in lme4
-    group_var <- vapply(bars,
-                        function(x)
-                          deparse1(x[[3]]),
-                        "")
-    groups <- data[,group_var]
+    if (inherits(substitute(ses), "character")) {
+      ses <- data[, ses]
+    } else {
+      ses <- data[,deparse(substitute(ses))]
+    }
+    # check that formula includes a conditional bar to specify random effect
+    if (formula[[3]][[1]] != "|") {
+      stop("Make sure that your formula includes `|` to specify a random effect if you'd like
+          to use `betta_random`. Otherwise, you can use `betta`.")
+    }
+    # get 3rd of variable attribute of terms(formula), which is the RHS of formula, 
+    # then get 3rd element of that, which is the object after the conditional bar
+    group_var <- deparse1((attr(terms(formula), "variables")[[3]])[[3]])
+    groups <- data[, group_var]
     full_form <- lme4::subbars(formula)
     sm_form <- update(full_form, paste("~.-",group_var))
     X <- stats::model.matrix(sm_form, data)
@@ -142,46 +137,12 @@ betta_random <- function(chats = NULL, ses, X = NULL, groups = NULL, formula = N
                    solve(t(X_effective) %*% X_effective) %*% t(X_effective) %*% chats_effective,
                    within_groups_start)
 
-  if(n_initializations == 1){
   output <- optim(initial_est,
                   likelihood,
                   hessian=FALSE,
                   control=list(fnscale=-1),
                   lower=c(0, rep(-Inf, p), rep(0, gs)),
                   method="L-BFGS-B")
-  } else{
-    lower=c(0, rep(-Inf, p), rep(0, gs))
-    which_positive <- lower ==0
-    initial_signs <- sign(initial_est)
-    log_init <- log(abs(initial_est + 1e-4))
-
-    initial_ests <- lapply(1:n_initializations, function(i)
-                           (log_init + rnorm(length(log_init),0,max(sd(log_init),1))) %>%
-                             (function(x){ x <- exp(x)
-                              x[!which_positive] <- x[!which_positive]*sample(c(-1,1),
-                                                                              sum(!which_positive),
-                                                                              replace = TRUE)
-                              return(x)}))
-
-    outputs <- lapply(1:n_initializations, function(i)
-                      try(  output <- optim(initial_ests[[i]],
-                                            likelihood,
-                                            hessian=FALSE,
-                                            control=list(fnscale=-1),
-                                            lower=c(0, rep(-Inf, p), rep(0, gs)),
-                                            method="L-BFGS-B")))
-
-    obj_values <- sapply(outputs,
-                         function(x) ifelse(is.list(x),x$value,-Inf))
-
-    best_model <- which.max(obj_values)
-
-
-    output <- outputs[[best_model[1]]]
-
-  }
-
-
   ssq_u <- output$par[1]
   beta <- output$par[2:(p+1)]
   ssq_group <- output$par[(p+2):(p+gs+1)]
@@ -194,7 +155,7 @@ betta_random <- function(chats = NULL, ses, X = NULL, groups = NULL, formula = N
   Q <- sum((chats_effective - X_effective %*% beta)^2/ses_effective^2)
 
   mytable <- list()
-  mytable$table <- cbind("Estimates"=beta,"Standard Errors"=sqrt(vars),"p-values"=round(2*(1-pnorm(abs(beta/sqrt(vars)))),3))
+  mytable$table <- cbind("Estimates"=beta,"Standard Errors"=sqrt(vars),"p-values"=round(2*(1-pnorm(abs(beta/sqrt(vars)))),p.digits))
   try(rownames(mytable$table) <- colnames(X), silent = T)
   mytable$cov <- solve(t(X_effective) %*% W %*% X_effective)
   mytable$ssq_u <- ssq_u

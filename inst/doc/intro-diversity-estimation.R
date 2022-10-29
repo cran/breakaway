@@ -1,14 +1,16 @@
-## ---- include=FALSE-----------------------------------------------------------
-options(rmarkdown.html_vignette.check_title = FALSE) 
-
 ## -----------------------------------------------------------------------------
+# install.packages("remotes")
+# remotes::install_github("adw96/breakaway")
 library(breakaway)
 
 ## -----------------------------------------------------------------------------
+# install.packages("magrittr")
 library(magrittr)
 
 ## -----------------------------------------------------------------------------
-pasolli_et_al <- openxlsx::read.xlsx("https://ars.els-cdn.com/content/image/1-s2.0-S0092867419300017-mmc4.xlsx", sheet = 2)
+# install.packages("openxlsx")
+# pasolli_et_al <- openxlsx::read.xlsx("https://ars.els-cdn.com/content/image/1-s2.0-S0092867419300017-mmc4.xlsx", sheet = 2)
+data("pasolli_et_al")
 
 ## -----------------------------------------------------------------------------
 ft <- pasolli_et_al$`#.Samples` %>% make_frequency_count_table

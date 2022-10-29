@@ -5,7 +5,7 @@
 
 [![R-CMD-check](https://github.com/adw96/breakaway/workflows/R-CMD-check/badge.svg)](https://github.com/adw96/breakaway/actions)
 [![Coverage
-status](https://codecov.io/gh/adw96/breakaway/branch/master/graph/badge.svg)](https://codecov.io/github/adw96/breakaway?branch=master)
+status](https://codecov.io/gh/adw96/breakaway/branch/master/graph/badge.svg)](https://codecov.io/github/adw96/breakaway?branch=main)
 
 Understanding the drivers of microbial diversity is an important
 frontier of microbial ecology, and investigating the diversity of
@@ -58,7 +58,7 @@ implemented in breakaway? Submit a pull request or contact the
 -   Documentation for functions can be found
     [here](https://adw96.github.io/breakaway/reference/index.html)
 -   A pdf of all documentation can be found in the
-    [breakaway-manual.pdf](https://github.com/adw96/breakaway/blob/master/breakaway-manual.pdf)
+    [breakaway-manual.pdf](https://github.com/adw96/breakaway/tree/master/breakaway-manual.pdf)
 -   We try to answer frequently asked questions on the
     [wiki](https://github.com/adw96/breakaway/wiki)
 
@@ -66,11 +66,9 @@ implemented in breakaway? Submit a pull request or contact the
 
 Maintainer: [Amy Willis](http://statisticaldiversitylab.com)
 
-Authors: [Amy Willis](http://statisticaldiversitylab.com), [John
-Bunge](https://stat.cornell.edu/people/emeritus-faculty/john-bunge),
+Authors: [Amy Willis](http://statisticaldiversitylab.com), John Bunge,
 [Bryan Martin](https://bryandmartin.github.io/), [Pauline
-Trinh](https://twitter.com/paulinetrinh), [Kathryn
-Barger](https://hnrca.tufts.edu/people/staff/kathryn-barger-phd), [David
+Trinh](https://twitter.com/paulinetrinh), Kathryn Barger, [David
 Clausen](https://www.biostat.washington.edu/people/david-clausen) and
 [Sarah Teichman](https://svteichman.github.io/).
 

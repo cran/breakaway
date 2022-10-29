@@ -16,7 +16,7 @@ rztnbinomtable(C, size, probability)
 distribution}
 }
 \value{
-A simulated frequency count table
+A simulated frequency count table.
 }
 \description{
 Simulate a frequency count table based on a negative binomial model.

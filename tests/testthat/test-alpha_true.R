@@ -2,8 +2,7 @@ context("alpha_true")
 
 library(breakaway)
 
-test_that("alpha true functions work", {
-  skip_on_cran()
+test_that("alpha true functions work", { 
   expect_is(true_shannon(c(.2,.8)), "numeric")
   expect_error(true_shannon(.2))
   expect_error(true_hill(.2), q = 2)

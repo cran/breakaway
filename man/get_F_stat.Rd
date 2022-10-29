@@ -14,7 +14,8 @@ betta_random() -- containing fixed effect estimates of interest.}
 \item{L}{An m x p matrix defining the null LB = 0. L must have full row rank.}
 }
 \value{
-The calculated F-statistic
+A list containing
+\item{F_stat}{The calculated F statistic}
 }
 \description{
 This function calculates an F statistic for a test of null hypothesis LB = 0

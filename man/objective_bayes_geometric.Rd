@@ -18,34 +18,30 @@ objective_bayes_geometric(
 )
 }
 \arguments{
-\item{data}{A frequency count table}
+\item{data}{TODO(Kathryn)(Kathryn)}
 
-\item{output}{Print summary of fitted model. Default is TRUE.}
+\item{output}{TODO(Kathryn)(Kathryn)}
 
-\item{plot}{Plot estimates? Default is TRUE.}
+\item{plot}{TODO(Kathryn)(Kathryn)}
 
-\item{answers}{Return dataframe containing model summaries? Default is FALSE.}
+\item{answers}{TODO(Kathryn)(Kathryn)}
 
-\item{tau}{Truncation cutoff for model fitting. (Counts above this cutoff
-are not used in model fitting.) Default is 10.}
+\item{tau}{TODO(Kathryn)}
 
-\item{burn.in}{Number of MCMC burn-in iterations. Default is 100.}
+\item{burn.in}{TODO(Kathryn)}
 
-\item{iterations}{Number of MCMC iterations after burn-in. Default is 2500.}
+\item{iterations}{TODO(Kathryn)}
 
-\item{Metropolis.stdev.N}{Standard deviation of proposal distribution
-parameter N within MCMC. Default is 75.}
+\item{Metropolis.stdev.N}{TODO(Kathryn)}
 
-\item{Metropolis.start.theta}{Starting value of parameter theta.
-Default is 1}
+\item{Metropolis.start.theta}{TODO(Kathryn)}
 
-\item{Metropolis.stdev.theta}{Standard deviation of proposal distribution
-parameter theta within MCMC. Default is 0.3.}
+\item{Metropolis.stdev.theta}{TODO(Kathryn)}
 }
 \value{
-If answers set to TRUE, a list containing posterior median and
-95\% posterior credible intervals for richness, fitted values, and
-MCMC diagnostics. If answers set to FALSE (default), no value is returned.
+A list of results, including \item{est}{the median of estimates of N}, \item{ci}{a confidence interval for N},
+\item{mean}{the mean of estimates of N}, \item{semeanest}{the standard error of mean estimates},
+\item{dic}{the DIC of the model}, \item{fits}{fitted values}, and \item{diagnostics}{model diagonstics}.
 }
 \description{
 Estimate species richness with an objective Bayes method using a geometric model

@@ -6,14 +6,10 @@ output:
   output: rmarkdown::github_document
 vignette: >
   %\VignetteIndexEntry{intro-hypothesis-testing}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include=FALSE}
-options(rmarkdown.html_vignette.check_title = FALSE) 
-```
-  
 This tutorial will talk through hypothesis testing for alpha diversity indices using the functions `betta` and `betta_random`. 
 
 ## Disclaimer
@@ -25,16 +21,21 @@ This tutorial will talk through hypothesis testing for alpha diversity indices u
 Download the latest version of the package from github.
 
 ```{r, include=FALSE}
-library(tidyverse)
+# install.packages("remotes")
+# remotes::install_github("adw96/breakaway")
+if (requireNamespace('dplyr', quietly = TRUE)) {
+  library(dplyr)
+} else {
+  message("'dplyr' is not installed!")
+}
 library(breakaway)
 library(magrittr)
 library(phyloseq)
 ```
 
-Let's use the Whitman et al dataset from `corncob` as our example.
+Let's use the Whitman et al dataset as our example.
 
 ```{r}
-library(corncob)
 data("soil_phylo")
 soil_phylo %>% sample_data %>% head
 ```
@@ -59,10 +60,10 @@ Don't freak out! Those are wide error bars, but nothing went wrong -- it's just 
 We can get a table of the estimates and their uncertainties as follows:
 
 ```{r}
-summary(richness_soil) %>% as_tibble
+summary(richness_soil) %>% tibble::as_tibble()
 ```
 
-If you haven't seen a `tibble` before, it's like a `data.frame`, but way better. Already we can see that we only have 10 rows printed as opposed to the usual bajillion.
+If you haven't seen a `tibble` before, it's like a `data.frame`, but way better. Already we can see that we only have 10 rows printed as opposed to the usual bagillion.
 
 ## Inference
 
@@ -71,8 +72,8 @@ The first step to doing inference is to decide on your design matrix. We need to
 ```{r}
 meta <- subset_soil %>%
   sample_data %>%
-  as_tibble %>%
-  mutate("sample_names" = subset_soil %>% sample_names )
+  tibble::as_tibble() %>%
+  dplyr::mutate("sample_names" = subset_soil %>% sample_names )
 ```
 
 That warning is not a problem -- it's just telling us that it's not a phyloseq object anymore.
@@ -81,7 +82,7 @@ Suppose we want to fit the model with Day as a fixed effect. Here's how we do th
 
 ```{r}
 combined_richness <- meta %>%
-  left_join(summary(richness_soil),
+  dplyr::left_join(summary(richness_soil),
             by = "sample_names")
 # Old way (still works)
 bt_day_fixed <- betta(chats = combined_richness$estimate,
@@ -114,106 +115,36 @@ Under this different model, we see an estimated increase in richness after 82 da
 
 If you choose to use the old way, the structure of `betta_random` is to input your design matrix as `X`, and your random effects as `groups`, where the latter is a categorical variable. Otherwise, the input looks like how you would hand this off to a regular mixed effects model in the package `lme4`!
 
-# Using `betta` with DivNet
+If you are interested in generating confidence intervals for and testing hypotheses about linear combinations of fixed effects estimated in a `betta` or `betta_random` model, we recommend using the `betta_lincom` function.
 
-Maybe you don't care about richness... but you care about Shannon or Simpson diversity! [`DivNet`](https://github.com/adw96/DivNet) is our `R` package for estimating Shannon and Simpson diversity.
-
-```{r, include = FALSE}
-# remotes::install_github("adw96/DivNet")
-# library(DivNet)
-```
-
-DivNet can be slow when you have a large number of taxa (but we are working on it!), so to illustrate we are going to estimate phylum-level Shannon diversity:
-
-```{r}
-soil_phylum <- subset_soil %>%
-  tax_glom(taxrank="Phylum")
-```
-
-Easter egg: `phyloseq::tax_glom` can be incredibly slow! [Mike McLaren](https://github.com/mikemc) is a total champ and rewrote it faster -- check out his package [`speedyseq`](https://github.com/mikemc/speedyseq) and `speedyseq::tax_glom` in particular.
-
-Let's treat all samples as independent observations (`X = NULL`) and fit the DivNet model:
-
-(Check out the full documentation for details, including how to run in parallel)
-
-```{r, include=TRUE, cache=TRUE, message=FALSE, results="hide"}
-# the following line contains the DivNet command to fit the model we will use
-# dv <- DivNet::divnet(soil_phylum, X = NULL)
-
-# to allow readers to build this vignette without installing DivNet
-# we've saved the fitted model, which we'll load directly:
-
-data("dv")
-```
-
-This produces an object containing common diversity estimates:
-
-```{r}
-dv
-```
-
-We can look at the first few Shannon diversity estimates with the following:
-
-```{r}
-combined_shannon <- meta %>%
-  dplyr::left_join(dv$shannon %>% summary,
-            by = "sample_names")
-combined_shannon
-```
-
-You might notice that the estimates are not different from the plug-in estimate (only because we used `X = NULL`), but we have standard errors! That's the real advantage of using DivNet :)
-
-
-```{r}
-bt_day_fixed_id_random <- betta_random(formula = estimate ~ Day | ID, 
-               ses = error,  data = combined_shannon)
-bt_day_fixed_id_random$table
-```
-
-and similarly for no random effects.
-
-If you are interested in generating confidence intervals for and testing hypotheses about
-linear combinations of fixed effects estimated in a `betta` or `betta_random` model, we
-recommend using the `betta_lincom` function.
-
-For example, to generate a confidence interval for $\beta_0 + \beta_1$ (i.e., intercept plus
-'Day2' coefficient, or in other words, the mean Shannon diversity in soils on day 82 of the experiment) in the Shannon diversity model we fit in the previous code chunk,
+For example, to generate a confidence interval for $\beta_0 + \beta_1$ (i.e., intercept plus 'Day2' coefficient, or in other words, the mean richness in soils on day 82 of the experiment) using the model we fit in the previous code chunk,
 we run the following code:
 
 ```{r}
-
 betta_lincom(fitted_betta = bt_day_fixed_id_random,
              linear_com = c(1,1),
              signif_cutoff = 0.05)
-
-
 ```
 
-Here, we've set the `linear_com` argument equal to `c(1,1)` to tell `betta_lincom` to construct
-a confidence interval for $1 \times \beta_0 + 1 \times \beta_1$. Because we set `signif_cutoff` equal to $0.05$, `betta_lincom` returns a $95\%  = (1 - 0.05)*100\%$ confidence interval.
-The p-value reported here
-is for a test of the null hypothesis that $1 \times \beta_0 + 1 \times \beta_1 = 0$ -- 
-unsurprisingly, this is small. (If you are confused about why this is "unsurprising," remember that $\beta_0 + \beta_1$ 
-represents a mean Shannon diversity in soils on day 82 of the experiment of Whitman et al. When can a Shannon diversity be zero?)
+Here, we've set the `linear_com` argument equal to `c(1,1)` to tell `betta_lincom` to construct a confidence interval for $1 \times \beta_0 + 1 \times \beta_1$. Because we set `signif_cutoff` equal to 0.05, `betta_lincom` returns a $95\%  = (1 - 0.05)*100\%$ confidence interval. The p-value reported here is for a test of the null hypothesis that $1 \times \beta_0 + 1 \times \beta_1 = 0$ -- unsurprisingly, this is small. (If you are confused about why this is "unsurprising," remember that $\beta_0 + \beta_1$ represents a mean richness in soils on day 82 of the experiment of Whitman et al. When can richness be zero?)
 
-The syntax and output using `betta_lincom` with a `betta` object as input is exactly the same 
+The syntax and output using `betta_lincom` with a `betta` object as input is exactly the same
 as with a `betta_random` object, so we haven't included a separate example for this case.
 
 To look at a more complicated example of hypothesis testing, let's now
 include another date of observation in the Whitman et al. dataset -- `Day = 1`, 
 or observations taken on day 12 of this study. We might be interested now
 in determining whether there is _any_ difference across observation times
-in Shannon diversity.
+in richness.
 
 We prepare data and fit a model essentially as we did above. First, 
 we subset the soil data to only biochar-amended plots and allow
 `Day` to equal 0, 1, or 2.
 
 ```{r}
-
 subset_soil_days_1_2 <- soil_phylo %>%
   subset_samples(Amdmt == 1) %>% # only biochar
-  subset_samples(Day %in% c(0, 1, 2))  # only Days 0 and 82
+  subset_samples(Day %in% c(0, 1, 2))  # Days 0, 12, and 82
 ```
 
 We extract metadata and aggregate to phylum level as above as well:
@@ -221,69 +152,49 @@ We extract metadata and aggregate to phylum level as above as well:
 ```{r}
 meta_days_1_2 <- subset_soil_days_1_2 %>%
   sample_data %>%
-  as_tibble %>%
-  mutate("sample_names" = subset_soil_days_1_2 %>% sample_names )
-
-soil_phylum_days_1_2 <- subset_soil_days_1_2 %>%
-  tax_glom(taxrank="Phylum")
+  tibble::as_tibble() %>%
+  dplyr::mutate("sample_names" = subset_soil_days_1_2 %>% sample_names )
 ```
-
 
 We again run DivNet and extract estimates of Shannon diversity.
 
 ```{r}
-# we again have stored the output of the following DivNet call
-# dv_days_1_2 <- DivNet::divnet(soil_phylum_days_1_2, X = NULL)
+richness_days_1_2 <- subset_soil_days_1_2 %>% 
+  breakaway
 
-# and we load the fitted model directly
-data("dv_days_1_2")
-
-combined_shannon_days_1_2 <- meta_days_1_2 %>%
-  dplyr::left_join(dv_days_1_2$shannon %>% summary,
+combined_richness_days_1_2 <- meta_days_1_2 %>%
+  dplyr::left_join(summary(richness_days_1_2),
             by = "sample_names")
-combined_shannon_days_1_2
-
+combined_richness_days_1_2
 ```
+
 Now we fit another model with `betta_random`.
+
 ```{r}
 bt_day_1_2_fixed_id_random <- betta_random(formula = estimate ~ Day | ID, 
-               ses = error,  data = combined_shannon_days_1_2)
+               ses = error,  data = combined_richness_days_1_2)
 bt_day_1_2_fixed_id_random$table
 ```
 
 The output we get from `betta_random` gives us p-values for testing whether
-mean Shannon diversity is the same at day 12 as at day 0 and for whether it is the same at day 82 as at day 0, but we want to get a _single_ p-value for an 
-overall test of whether mean Shannon diversity varies with day at all! To do this, we can use the `test_submodel` function in `breakaway` to test our 
-full model against a null with no terms in `Day` using a parametric bootstrap:
+mean richness is the same at day 12 as at day 0 and for whether it is the same at day 82 as at day 0, but we want to get a _single_ p-value for an overall test of whether mean Shannon diversity varies with day at all! To do this, we can use the `test_submodel` function to test our full model against a null with no terms in `Day` using a parametric bootstrap:
 
 ```{r}
-do_computation_now <- FALSE
-
-if(do_computation_now){ #if you want to run this bootstrap yourself, you can!
 set.seed(345)
 submodel_test <- test_submodel(bt_day_1_2_fixed_id_random,
                           submodel_formula = estimate~1,
                           method = "bootstrap",
-                          nboot = 1000)
-} else{ #to save time, we'll load saved test_submodel() output instead
-  data("submodel_test")
-}
+                          nboot = 100)
 
 submodel_test$pval
-
 ```
 
-This returns a p-value of `r submodel_test$pval` -- but recall that we obtained
-this p-value with a parametric bootstrap which we've run with 1000 bootstrap 
-iterations. Hence, we'll report $p \leq 0.001$ rather than $p = 0$. In any case,
-we have reasonably strong evidence of some difference in mean Shannon 
-diversity over time, so we reject the null (intercept-only) model. 
+This returns a p-value of `r submodel_test$pval`, which means that the null hypothesis would not be rejected at a cut-off of 0.05. This means that we do not have strong enough evidence to reject some difference in mean richness over time. In practice, it's a good idea to use more than 100 bootstrap iterations -- 10,000 is a good choice for publication. (We use 100 here so the vignette loads in a reasonable amount of time.)
 
 And there you have it! That's how to do hypothesis testing for diversity!
-
 
 If you use our tools, please don't forget to cite them!
 
 - `breakaway`: Willis & Bunge. (2015). *Estimating diversity via frequency ratios*. Biometrics. [doi:10.1111/biom.12332](https://doi.org/10.1111/biom.12332).
-- `DivNet`: Willis & Martin. (2018+). *DivNet: Estimating diversity in networked communities*. bioRxiv. [10.1101/305045](https://doi.org/10.1101/305045).
+- `DivNet`: Willis & Martin. (2020). *DivNet: Estimating diversity in networked communities*. Biostatistics. [doi:10.1093/biostatistics/kxaa015](https://doi.org/10.1093/biostatistics/kxaa015).
 - `betta`: Willis, Bunge & Whitman. (2016). *Improved detection of changes in species richness in high diversity microbial communities*. Journal of the Royal Statistical Society: Series C. [doi:10.1111/rssc.12206](https://doi.org/10.1111/rssc.12206).

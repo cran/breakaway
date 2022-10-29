@@ -12,9 +12,6 @@ A data frame with 88 rows and 2 variables:
   ...
 }
 }
-\source{
-\url{https://onlinelibrary.wiley.com/doi/abs/10.1111/biom.12332}
-}
 \usage{
 apples
 }
@@ -24,10 +21,10 @@ apples
 \references{
 Willis, A. and Bunge, J. (2015). Estimating diversity via
 frequency ratios. \emph{Biometrics}, \bold{71}(4), 1042--1049.
-\url{https://onlinelibrary.wiley.com/doi/abs/10.1111/biom.12332}
+\url{https://onlinelibrary.wiley.com/doi/10.1111/biom.12332/abstract}
 
-Walsh, F. et al. (2014). (2014). Restricted streptomycin use in apple
-orchards did not adversely alter the soil bacteria communities.
+Walsh, F. et al. (2014). (2014). Restricted streptomycin use in apple 
+orchards did not adversely alter the soil bacteria communities. 
 \emph{Frontiers in Microbiology} \bold{4}, 383.
 }
 \keyword{datasets}

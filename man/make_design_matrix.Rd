@@ -12,7 +12,7 @@ make_design_matrix(phyloseq_object, variables)
 \item{variables}{variable names}
 }
 \value{
-A design matrix
+A matrix object giving the design matrix from the desired variables.
 }
 \description{
 Make design matrix

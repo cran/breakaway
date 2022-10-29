@@ -16,42 +16,41 @@ objective_bayes_negbin(
   Metropolis.start.T1 = -0.8,
   Metropolis.stdev.T1 = 0.01,
   Metropolis.start.T2 = 0.8,
-  Metropolis.stdev.T2 = 0.01
+  Metropolis.stdev.T2 = 0.01,
+  bars = 5
 )
 }
 \arguments{
-\item{data}{A frequency count table}
+\item{data}{TODO(Kathryn)}
 
-\item{output}{Print summary of fitted model. Default is TRUE.}
+\item{output}{TODO(Kathryn)}
 
-\item{plot}{Plot estimates? Default is TRUE.}
+\item{plot}{TODO(Kathryn)}
 
-\item{answers}{Return dataframe containing model summaries? Default is FALSE.}
+\item{answers}{TODO(Kathryn)}
 
-\item{tau}{Truncation cutoff for model fitting. (Counts above this cutoff
-are not used in model fitting.) Default is 10.}
+\item{tau}{TODO(Kathryn)}
 
-\item{burn.in}{Number of MCMC burn-in iterations. Default is 1000.}
+\item{burn.in}{TODO(Kathryn)}
 
-\item{iterations}{Number of MCMC iterations after burn-in. Default is 5000.}
+\item{iterations}{TODO(Kathryn)}
 
-\item{Metropolis.stdev.N}{Standard deviation of proposal distribution
-parameter N within MCMC. Default is 100.}
+\item{Metropolis.stdev.N}{TODO(Kathryn)}
 
-\item{Metropolis.start.T1}{Starting value of parameter T1. Default is -0.8.}
+\item{Metropolis.start.T1}{TODO(Kathryn)}
 
-\item{Metropolis.stdev.T1}{Standard deviation of proposal distribution
-parameter T1 within MCMC. Default is 0.01.}
+\item{Metropolis.stdev.T1}{TODO(Kathryn)}
 
-\item{Metropolis.start.T2}{Starting value of parameter T2. Default is 0.8.}
+\item{Metropolis.start.T2}{TODO(Kathryn)}
 
-\item{Metropolis.stdev.T2}{Standard deviation of proposal distribution
-parameter T2 within MCMC. Default is 0.01.}
+\item{Metropolis.stdev.T2}{TODO(Kathryn)}
+
+\item{bars}{TODO(Kathryn)}
 }
 \value{
-If answers set to TRUE, a list containing posterior median and
-95\% posterior credible intervals for richness, fitted values, and
-MCMC diagnostics. If answers set to FALSE (default), no value is returned.
+A list of results, including \item{est}{the median of estimates of N}, \item{ci}{a confidence interval for N},
+\item{mean}{the mean of estimates of N}, \item{semeanest}{the standard error of mean estimates},
+\item{dic}{the DIC of the model}, \item{fits}{fitted values}, and \item{diagnostics}{model diagonstics}.
 }
 \description{
 Objective Bayes species richness estimate with the Negative Binomial model

@@ -43,7 +43,7 @@ If no argument is given, defaults to the order.}
 \item{myxlim}{Deprecated, for backwards compatibility}
 }
 \value{
-A ggplot object
+A ggplot object.
 }
 \description{
 A simple plotting interface for comparing total diversity across samples or

@@ -19,7 +19,8 @@
 #' the \code{data} argument.
 #' @param data A dataframe containing the response, response standard errors, covariates,
 #' and grouping variable. Required with the \code{formula} argument.
-#' @param initial_est (Optional) A vector of length 1 + \code{ncol}(X) giving the starting values for the likelihood maximisation search. The first element is the starting estimate for sigma^2_u, and the remaining elements are the starting elements for beta. Defaults to NULL, in which case the starting values outlined in the paper are used.
+#' @param initial_est (Optional) A vector of length 1 + ncol(X) giving the starting values for the likelihood maximisation search. The first element is the starting estimate for sigma^2_u, and the remaining elements are the starting elements for beta. Defaults to NULL, in which case the starting values outlined in the paper are used.
+#' @param p.digits (Optional) A number that specifies the number of digits to which p-values will be rounded. The default value is 3 digits.  
 #' @return \item{table}{ A coefficient table for the model parameters. The
 #' columns give the parameter estimates, standard errors, and p-values,
 #' respectively. This model is only as effective as your diversity estimation
@@ -56,7 +57,7 @@
 #' approach is taken, whereby the varying levels of confidence in the estimates
 #' contributes to a diagonal but heteroscedastic covariance matrix. Given
 #' covariates constitute the fixed effects in the mixed model, and significance
-#' of the random effect term \code{sigsq_u} reflects heterogeneity in the sample,
+#' of the random effect term ``sigsq_u'' reflects heterogeneity in the sample,
 #' that is, variability that cannot be explained by only the covariates. The
 #' authors believe this to be the first attempt at modelling total diversity in
 #' a way that accounts for its estimated nature.
@@ -129,7 +130,7 @@
 #'
 #' @export betta
 betta <- function(chats = NULL, ses, X = NULL,
-                  initial_est = NULL, formula = NULL, data = NULL) {
+                  initial_est = NULL, formula = NULL, data = NULL, p.digits = 3) {
   if (!is.null(formula)) {
     if (is.null(data)) {
       stop("Please include a dataframe that corresponds with your formula.")
@@ -141,7 +142,11 @@ betta <- function(chats = NULL, ses, X = NULL,
     }
   }
   if (!is.null(formula)) {
-    ses <- data[,deparse(substitute(ses))]
+    if (inherits(substitute(ses), "character")) {
+      ses <- data[, ses]
+    } else {
+      ses <- data[,deparse(substitute(ses))]
+    }
     X <- stats::model.matrix(formula, data)
     chats <- stats::model.response(stats::model.frame(formula = formula, data = data))
   }
@@ -234,7 +239,7 @@ betta <- function(chats = NULL, ses, X = NULL,
   mytable <- list()
   mytable$table <- cbind("Estimates"=beta,
                          "Standard Errors"=sqrt(vars),
-                         "p-values"=round(2*(1-pnorm(abs(beta/sqrt(vars)))), 3))
+                         "p-values"=round(2*(1-pnorm(abs(beta/sqrt(vars)))), p.digits))
   mytable$cov <- solve(t(X_effective) %*% W %*% X_effective)
   mytable$ssq_u <- ssq_u
   mytable$homogeneity <- c(Q, 1-pchisq(Q, n-p))
